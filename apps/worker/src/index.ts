@@ -5,6 +5,8 @@ import express from 'express';
 
 import { createInitialSalts } from '@openpanel/db';
 import {
+  _eventsQueue,
+  _sessionsQueue,
   cronQueue,
   eventsQueue,
   notificationQueue,
@@ -28,6 +30,8 @@ async function start() {
     serverAdapter.setBasePath('/');
     createBullBoard({
       queues: [
+        new BullMQAdapter(_eventsQueue),
+        new BullMQAdapter(_sessionsQueue),
         new BullMQAdapter(eventsQueue),
         new BullMQAdapter(sessionsQueue),
         new BullMQAdapter(cronQueue),
