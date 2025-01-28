@@ -1,7 +1,7 @@
 import { Queue, QueueEvents } from 'bullmq';
 
 import type { IServiceEvent, Notification } from '@openpanel/db';
-import { _getRedisQueue, getRedisQueue } from '@openpanel/redis';
+import { getRedisQueue } from '@openpanel/redis';
 import type { TrackPayload } from '@openpanel/sdk';
 
 export interface EventsQueuePayloadIncomingEvent {
@@ -68,17 +68,6 @@ export type CronQueuePayload =
 
 export type CronQueueType = CronQueuePayload['type'];
 
-export const _eventsQueue = new Queue<EventsQueuePayload>('events', {
-  connection: _getRedisQueue(),
-  defaultJobOptions: {
-    removeOnComplete: 10,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000,
-    },
-  },
-});
 export const eventsQueue = new Queue<EventsQueuePayload>('{events}', {
   connection: getRedisQueue(),
   defaultJobOptions: {
@@ -91,15 +80,6 @@ export const eventsQueue = new Queue<EventsQueuePayload>('{events}', {
   },
 });
 
-export const _sessionsQueue = new Queue<SessionsQueuePayload>('sessions', {
-  connection: _getRedisQueue(),
-  defaultJobOptions: {
-    removeOnComplete: 10,
-  },
-});
-export const _sessionsQueueEvents = new QueueEvents('sessions', {
-  connection: _getRedisQueue(),
-});
 export const sessionsQueue = new Queue<SessionsQueuePayload>('{sessions}', {
   connection: getRedisQueue(),
   defaultJobOptions: {

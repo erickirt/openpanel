@@ -2,8 +2,6 @@ import { getTime } from '@openpanel/common';
 import { type IServiceCreateEventPayload, createEvent } from '@openpanel/db';
 import {
   type EventsQueuePayloadCreateSessionEnd,
-  _sessionsQueue,
-  _sessionsQueueEvents,
   sessionsQueue,
   sessionsQueueEvents,
 } from '@openpanel/queue';
@@ -116,12 +114,7 @@ export async function getSessionEndJob(args: {
     }
 
     if (state === 'active' || state === 'waiting') {
-      if (job.queueName === '{sessions}') {
-        await job.waitUntilFinished(sessionsQueueEvents, 1000 * 10);
-      } else {
-        // TODO: Remove this once we have a new dragonfly instance
-        await job.waitUntilFinished(_sessionsQueueEvents, 1000 * 10);
-      }
+      await job.waitUntilFinished(sessionsQueueEvents, 1000 * 10);
       return getSessionEndJob({
         ...args,
         priority,
@@ -141,30 +134,12 @@ export async function getSessionEndJob(args: {
     if (res) return res;
   }
 
-  // TODO: Remove this once we have a new dragonfly instance
-  const _currentJob = await _sessionsQueue.getJob(
-    getSessionEndJobId(args.projectId, args.currentDeviceId),
-  );
-  if (_currentJob) {
-    const res = await handleJobStates(_currentJob, args.currentDeviceId);
-    if (res) return res;
-  }
-
   // Check previous device job
   const previousJob = await sessionsQueue.getJob(
     getSessionEndJobId(args.projectId, args.previousDeviceId),
   );
   if (previousJob) {
     const res = await handleJobStates(previousJob, args.previousDeviceId);
-    if (res) return res;
-  }
-
-  // TODO: Remove this once we have a new dragonfly instance
-  const _previousJob = await _sessionsQueue.getJob(
-    getSessionEndJobId(args.projectId, args.previousDeviceId),
-  );
-  if (_previousJob) {
-    const res = await handleJobStates(_previousJob, args.previousDeviceId);
     if (res) return res;
   }
 
