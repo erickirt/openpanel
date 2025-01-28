@@ -8,10 +8,11 @@ const options: RedisOptions = {
     const delay = Math.min(times * 100, maxRetryDelay);
     return delay;
   },
-  reconnectOnError: (err: Error) => {
+  reconnectOnError: (err) => {
     const reconnectErrors = ['READONLY', 'ETIMEDOUT', 'EPIPE', 'ECONNRESET'];
     return reconnectErrors.some(
-      (errorType) => err.message.includes(errorType) || err.code === errorType,
+      (errorType) =>
+        err.message.includes(errorType) || (err as any).code === errorType,
     );
   },
   autoResubscribe: true, // default
